@@ -14,10 +14,10 @@ Omarchy <pkgs@omarchy.org>
 ## Get the key
 
 ```bash
-gpg --auto-key-locate clear,nodefault,wkd --locate-external-keys pkgs@omarchy.org
+gpg --locate-external-keys pkgs@omarchy.org
 ```
 
-Check that the fingerprint gpg prints is the one above. A signature made by a subkey shows it as `Primary key fingerprint`.
+GnuPG looks the key up through WKD by default. Check that the fingerprint gpg prints is the one above. A signature made by a subkey shows it as `Primary key fingerprint`.
 
 ## Update the key
 
@@ -37,7 +37,17 @@ Check that the fingerprint gpg prints is the one above. A signature made by a su
 gpg-wks-client --check pkgs@omarchy.org
 ```
 
-It returns success when the key is available through WKD. [wkd.dp42.dev](https://wkd.dp42.dev/) runs the same checks from outside and shows each step.
+It returns success when the key is available through WKD.
+
+To see how the key was found, look it up from an empty keyring:
+
+```bash
+gpg --homedir "$(mktemp -d)" --verbose --locate-keys pkgs@omarchy.org
+```
+
+It prints `automatically retrieved 'pkgs@omarchy.org' via WKD`. A temporary keyring rules out a copy you already have, and it also rules out a cached failure in your own `dirmngr`.
+
+[wkd.dp42.dev](https://wkd.dp42.dev/) runs the same checks from outside and shows each step.
 
 ## What is served
 
