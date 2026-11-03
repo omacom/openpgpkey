@@ -64,6 +64,8 @@ WKD has two lookup methods, and both serve the same file. The specification says
 
 `public/_headers` serves the key as `application/octet-stream`, and lets browser clients read every file.
 
+`public/_redirects` sends a visit to `https://openpgpkey.omarchy.org/` to this repository with a 302. It matches `/` only, so no WKD path changes.
+
 No client or proxy keeps a copy of these files: `public/_headers` sends `Cache-Control: no-store`, and `wrangler.jsonc` turns Workers Cache off. Cloudflare serves the files of the active deployment from its asset store, so a merged key change is live once its deploy finishes.
 
 ## How it runs
