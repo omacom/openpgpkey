@@ -7,7 +7,7 @@
   // without running any code.
   "assets": { "directory": "./public" },
   // No Workers Cache. public/_headers sends Cache-Control: no-store, so
-  // no cache between Cloudflare and the client keeps a copy either.
+  // clients and proxies keep no copy either.
   "cache": { "enabled": false },
   "workers_dev": false,
   "preview_urls": false,

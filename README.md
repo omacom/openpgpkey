@@ -2,7 +2,7 @@
 
 The [Web Key Directory](https://datatracker.ietf.org/doc/draft-koch-openpgp-webkey-service/) (WKD) for omarchy.org. Any OpenPGP client can fetch Omarchy's key from the address `pkgs@omarchy.org`, over HTTPS, with no keyserver.
 
-That key and its subkeys sign the Omarchy packages and ISOs:
+That key signs the Omarchy packages and ISOs:
 
 ```
 40DF B630 FF42 BCFF B047  046C F013 4EE6 80CA C571
@@ -17,7 +17,7 @@ Omarchy <pkgs@omarchy.org>
 gpg --locate-external-keys pkgs@omarchy.org
 ```
 
-GnuPG looks the key up through WKD by default. Check that the fingerprint gpg prints is the one above. A signature made by a subkey shows it as `Primary key fingerprint`.
+GnuPG looks the key up through WKD by default. Check that the fingerprint gpg prints is the one above.
 
 ## Update the key
 
@@ -64,7 +64,7 @@ WKD has two lookup methods, and both serve the same file. The specification says
 
 `public/_headers` serves the key as `application/octet-stream`, and lets browser clients read every file.
 
-Nothing caches these files. `public/_headers` sends `Cache-Control: no-store`, so neither Cloudflare's CDN nor a client or proxy keeps a copy, and `wrangler.jsonc` turns Workers Cache off. A merged key change is live as soon as the deploy finishes.
+No client or proxy keeps a copy of these files: `public/_headers` sends `Cache-Control: no-store`, and `wrangler.jsonc` turns Workers Cache off. Cloudflare serves the files of the active deployment from its asset store, so a merged key change is live once its deploy finishes.
 
 ## How it runs
 
@@ -89,7 +89,7 @@ To deploy without GitHub, run `npm ci && npx wrangler deploy` from a checkout of
 `.github/workflows/check.yml` has two jobs:
 
 - `files`, on every pull request and push: `omarchy.gpg` is still `40DFB630…`, and running `gpg-wks-client` again changes no committed file.
-- `live`, after each push to `main` and once a day: both methods serve this commit's key with `Cache-Control: no-store`, and `gpg-wks-client --check` passes.
+- `live`, after each push to `main` and once a day: both methods serve this commit's key and policy file with `Cache-Control: no-store`, and `gpg-wks-client --check` passes.
 
 ## Undo
 
