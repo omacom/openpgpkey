@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openpgpkey",
+  "account_id": "220c20627547d8661d630c98a00a79aa",
+  "compatibility_date": "2026-10-24",
+  // No script: Cloudflare serves these files from the nearest location
+  // without running any code.
+  "assets": { "directory": "./public" },
+  // No Workers Cache. public/_headers sends Cache-Control: no-store, so
+  // no cache between Cloudflare and the client keeps a copy either.
+  "cache": { "enabled": false },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    // The advanced method. A custom domain: Cloudflare creates the DNS
+    // record and the certificate.
+    { "pattern": "openpgpkey.omarchy.org", "custom_domain": true },
+    // The direct method, on the website's host. A route takes precedence
+    // over the website's custom domain for this path only.
+    { "pattern": "omarchy.org/.well-known/openpgpkey/*", "zone_name": "omarchy.org" }
+  ]
+}

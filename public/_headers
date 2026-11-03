@@ -1,0 +1,9 @@
+/.well-known/openpgpkey/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-store
+
+/.well-known/openpgpkey/hu/*
+  Content-Type: application/octet-stream
+
+/.well-known/openpgpkey/omarchy.org/hu/*
+  Content-Type: application/octet-stream

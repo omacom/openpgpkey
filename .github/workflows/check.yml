@@ -1,0 +1,58 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  files:
+    # The committed WKD files are exactly what gpg-wks-client writes from
+    # omarchy.gpg, and omarchy.gpg is still the key 40DFB630.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get install -y --no-install-recommends gpg-wks-client
+      - name: omarchy.gpg is 40DFB630FF42BCFFB047046CF0134EE680CAC571
+        run: |
+          fpr=$(gpg --with-colons --show-keys omarchy.gpg | awk -F: '$1 == "fpr" { print $10; exit }')
+          [[ $fpr == "40DFB630FF42BCFFB047046CF0134EE680CAC571" ]]
+      - name: The WKD files match omarchy.gpg
+        run: |
+          gpg-wks-client -C public/.well-known/openpgpkey --install-key ./omarchy.gpg pkgs@omarchy.org
+          git status --porcelain
+          [[ -z $(git status --porcelain) ]]
+
+  live:
+    # What clients get, after each deploy of main and once a day.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get install -y --no-install-recommends gpg-wks-client
+      - name: Both methods serve this commit's key
+        run: |
+          key=public/.well-known/openpgpkey/omarchy.org/hu/scsaohmoz4qo7bwupkm398ssojww4ioz
+          for url in \
+            "https://openpgpkey.omarchy.org/.well-known/openpgpkey/omarchy.org/hu/scsaohmoz4qo7bwupkm398ssojww4ioz?l=pkgs" \
+            "https://omarchy.org/.well-known/openpgpkey/hu/scsaohmoz4qo7bwupkm398ssojww4ioz?l=pkgs"; do
+            # Workers Builds deploys main in parallel with this job.
+            for attempt in $(seq 40); do
+              curl -fsS "$url" | cmp -s - "$key" && break
+              (( attempt < 40 )) || { echo "::error::$url does not serve $key"; exit 1; }
+              sleep 15
+            done
+            curl -fsSI "$url" | tr -d '\r' | tee /dev/stderr | grep -qix 'cache-control: no-store'
+          done
+      - run: gpg-wks-client --check pkgs@omarchy.org
